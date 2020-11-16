@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,64 +25,57 @@ public class PiAdapter extends RecyclerView.Adapter<PiAdapter.MyViewHolder> impl
             "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
     };
     private static final int HEADER_ITEM = 123;
-    List<String> datas = new ArrayList<>();
+
+    private List<String> listData = new ArrayList<>();
 
     public PiAdapter() {
-        initData();
-    }
-
-    private void initData() {
         for (int i = 65; i < 26 + 65; i++) {
-            datas.add(String.valueOf((char) i));
+            listData.add((char) i + " == ADS");
             for (int j = 0; j < 10; j++) {
                 String itemText = getItemText((char) i);
-                datas.add(itemText);
+                listData.add(itemText);
             }
         }
     }
 
     private String getItemText(char prefix) {
-        int length = createRandom(0, 10);
+        int length = createRandom(10);
         StringBuilder builder = new StringBuilder();
         builder.append(prefix);
         for (int i = 0; i < length; i++) {
-            int random = createRandom(0, 51);
+            int random = createRandom(51);
             builder.append(DICT[random]);
         }
         return builder.toString();
     }
 
-    private int createRandom(int min, int max) {
+    private int createRandom(int max) {
         Random random = new Random();
-        return random.nextInt(max) % (max - min + 1) + min;
+        return random.nextInt(max) % (max + 1);
     }
 
+    @NonNull
     @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (viewType == HEADER_ITEM) {
-            View inflate = LayoutInflater.from(parent.getContext()).inflate(R.layout.item, parent, false);
-            return new MyViewHolder(inflate);
-        } else {
-            View inflate = LayoutInflater.from(parent.getContext()).inflate(R.layout.item, parent, false);
-            return new MyViewHolder(inflate);
-        }
+    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View inflate = LayoutInflater.from(parent.getContext()).inflate(R.layout.item, parent, false);
+        return new MyViewHolder(inflate);
     }
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        String item = datas.get(position);
+        String item = listData.get(position);
         TextView textView = holder.itemView.findViewById(R.id.tvTitle);
         textView.setText(item);
     }
 
     @Override
     public int getItemCount() {
-        return datas.size();
+        return listData.size();
     }
 
     @Override
     public int getItemViewType(int position) {
-        return position % 11 == 0 ? HEADER_ITEM : super.getItemViewType(position);
+        return position % 11 == 0 && position > 0 ? HEADER_ITEM : super.getItemViewType(position);
     }
 
     @Override

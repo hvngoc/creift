@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.PointF;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
@@ -334,7 +335,9 @@ public class StickyHeadersLinearLayoutManager extends LinearLayoutManager {
                             nextHeaderView = null;
                         }
                     }
-                    mStickyHeader.setTranslationX(getX(mStickyHeader, nextHeaderView));
+                    float x = getX(mStickyHeader, nextHeaderView);
+                    Log.d("hahahaha", "xxx " + x);
+                    mStickyHeader.setTranslationX(x);
                     mStickyHeader.setTranslationY(getY(mStickyHeader, nextHeaderView));
                     return;
                 }
