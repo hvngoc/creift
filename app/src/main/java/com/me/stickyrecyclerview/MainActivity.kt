@@ -1,11 +1,11 @@
 package com.me.stickyrecyclerview
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.me.stickyrecyclerview.bun.PiAdapter
-import com.me.stickyrecyclerview.bun.StickyHeadersLinearLayoutManager
+import com.me.stickyrecyclerview.lin.SonAdapter
+import com.me.stickyrecyclerview.lin.SonScrolling
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -35,10 +35,21 @@ class MainActivity : AppCompatActivity() {
             */
         }
 
+//        burn.setOnClickListener {
+//            rcItems.setHasFixedSize(true)
+//            rcItems.adapter = PiAdapter()
+//            rcItems.layoutManager =
+//                StickyHeadersLinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
+//        }
+
         burn.setOnClickListener {
-        rcItems.setHasFixedSize(true)
-            rcItems.adapter = PiAdapter()
-            rcItems.layoutManager = StickyHeadersLinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
+            val manager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
+            val sonter = SonAdapter()
+
+            rcItems.setHasFixedSize(true)
+            rcItems.addOnScrollListener(SonScrolling(manager, sonter, rcItems))
+            rcItems.adapter = sonter
+            rcItems.layoutManager = manager
         }
     }
 }
