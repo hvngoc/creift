@@ -3,6 +3,9 @@ package com.me.stickyrecyclerview
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.recyclerview.widget.RecyclerView
+import com.me.stickyrecyclerview.bun.PiAdapter
+import com.me.stickyrecyclerview.bun.StickyHeadersLinearLayoutManager
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -30,6 +33,12 @@ class MainActivity : AppCompatActivity() {
             Log.v("MainActivity", "First visible $firstVisibleView lastVisibleView $lastVisibleView")
             adapter.notifyItemChanged(firstVisibleView)
             */
+        }
+
+        burn.setOnClickListener {
+        rcItems.setHasFixedSize(true)
+            rcItems.adapter = PiAdapter()
+            rcItems.layoutManager = StickyHeadersLinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
         }
     }
 }

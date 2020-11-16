@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="300dp"
+    android:background="#f3d"
     android:layout_height="300dp">
 
     <TextView
         android:textSize="30sp"
         android:text="Title"
+        android:textColor="#FF0"
         android:gravity="center"
         android:id="@+id/tvTitle"
         android:layout_width="match_parent"
