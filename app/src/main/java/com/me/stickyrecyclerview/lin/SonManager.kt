@@ -23,25 +23,23 @@ internal class SonManager(private val context: Context, orientation: Int, revers
 
     companion object {
         private const val MILLISECONDS_PER_INCH = 50f
-    }
 
-    private val mShrinkAmount = 0.15f
-    private val mShrinkDistance = 0.9f
+        private const val AMOUNT = 0.15f
+        private const val DISTANCE = 0.9f
+    }
 
     override fun scrollVerticallyBy(dy: Int, recycler: Recycler?, state: RecyclerView.State?): Int {
         val orientation = orientation
         return if (orientation == VERTICAL) {
             val scrolled = super.scrollVerticallyBy(dy, recycler, state)
             val midpoint = height / 2f
-            val d0 = 0f
-            val d1 = mShrinkDistance * midpoint
-            val s0 = 1f
-            val s1 = 1f - mShrinkAmount
+            val distance = DISTANCE * midpoint
+            val shrink = 1f - AMOUNT
             for (i in 0 until childCount) {
                 val child = getChildAt(i) ?: continue
                 val childMidpoint = (getDecoratedBottom(child) + getDecoratedTop(child)) / 2f
-                val d = d1.coerceAtMost(abs(midpoint - childMidpoint))
-                val scale = s0 + (s1 - s0) * (d - d0) / (d1 - d0)
+                val d = distance.coerceAtMost(abs(midpoint - childMidpoint))
+                val scale = 1 + (shrink - 1) * d / distance
                 child.scaleX = scale
                 child.scaleY = scale
                 if (scale > .9f) {
@@ -65,15 +63,13 @@ internal class SonManager(private val context: Context, orientation: Int, revers
         return if (orientation == HORIZONTAL) {
             val scrolled = super.scrollHorizontallyBy(dx, recycler, state)
             val midpoint = width / 2f
-            val d0 = 0f
-            val d1 = mShrinkDistance * midpoint
-            val s0 = 1f
-            val s1 = 1f - mShrinkAmount
+            val distance = DISTANCE * midpoint
+            val shrink = 1f - AMOUNT
             for (i in 0 until childCount) {
                 val child = getChildAt(i) ?: continue
                 val childMidpoint = (getDecoratedRight(child) + getDecoratedLeft(child)) / 2f
-                val d = d1.coerceAtMost(abs(midpoint - childMidpoint))
-                val scale = s0 + (s1 - s0) * (d - d0) / (d1 - d0)
+                val d = distance.coerceAtMost(abs(midpoint - childMidpoint))
+                val scale = 1 + (shrink - 1) * d / distance
                 child.scaleX = scale
                 child.scaleY = scale
                 if (scale > .9f) {

@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.me.stickyrecyclerview.lin.SonAdapter
 import com.me.stickyrecyclerview.lin.SonManager
 import com.me.stickyrecyclerview.lin.SonScrolling
+import com.me.stickyrecyclerview.misa.RuManager
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -44,11 +45,18 @@ class MainActivity : AppCompatActivity() {
 //        }
 
         burn.setOnClickListener {
-            val manager = SonManager(this, RecyclerView.HORIZONTAL, false)
+//            val manager = SonManager(this, RecyclerView.HORIZONTAL, false)
+//            val sonter = SonAdapter()
+//
+//            rcItems.setHasFixedSize(true)
+//            rcItems.addOnScrollListener(SonScrolling(manager, sonter, rcItems))
+//            rcItems.adapter = sonter
+//            rcItems.layoutManager = manager
+
             val sonter = SonAdapter()
+            val manager = RuManager( sonter, this, RecyclerView.HORIZONTAL, false)
 
             rcItems.setHasFixedSize(true)
-            rcItems.addOnScrollListener(SonScrolling(manager, sonter, rcItems))
             rcItems.adapter = sonter
             rcItems.layoutManager = manager
         }
