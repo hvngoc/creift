@@ -27,6 +27,11 @@ class SonScrolling(
             return
         }
 
+        val child = manager.findViewByPosition(last)
+        val width = child?.measuredWidth?:0
+
+        Log.w("toang", "width $width")
+
         updateCurrentOffset()
 
     }
@@ -64,7 +69,6 @@ class SonScrolling(
         }
         val itemCount = recyclerView.adapter!!.itemCount
 
-        // In case there is an infinite pager
         if (position >= itemCount && itemCount != 0) {
             position %= itemCount
         }

@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.me.stickyrecyclerview.lin.SonAdapter
+import com.me.stickyrecyclerview.lin.SonManager
 import com.me.stickyrecyclerview.lin.SonScrolling
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -43,7 +44,7 @@ class MainActivity : AppCompatActivity() {
 //        }
 
         burn.setOnClickListener {
-            val manager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
+            val manager = SonManager(this, RecyclerView.HORIZONTAL, false)
             val sonter = SonAdapter()
 
             rcItems.setHasFixedSize(true)
