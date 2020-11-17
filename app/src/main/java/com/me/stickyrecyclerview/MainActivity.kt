@@ -2,12 +2,8 @@ package com.me.stickyrecyclerview
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.me.stickyrecyclerview.lin.SonAdapter
-import com.me.stickyrecyclerview.lin.SonManager
-import com.me.stickyrecyclerview.lin.SonScrolling
-import com.me.stickyrecyclerview.misa.RuManager
+import com.me.stickyrecyclerview.rin.RinManager
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -44,6 +40,23 @@ class MainActivity : AppCompatActivity() {
 //                StickyHeadersLinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
 //        }
 
+//        burn.setOnClickListener {
+////            val manager = SonManager(this, RecyclerView.HORIZONTAL, false)
+////            val sonter = SonAdapter()
+////
+////            rcItems.setHasFixedSize(true)
+////            rcItems.addOnScrollListener(SonScrolling(manager, sonter, rcItems))
+////            rcItems.adapter = sonter
+////            rcItems.layoutManager = manager
+//
+//            val sonter = SonAdapter()
+//            val manager = RuManager( sonter, this, RecyclerView.HORIZONTAL, false)
+//
+//            rcItems.setHasFixedSize(true)
+//            rcItems.adapter = sonter
+//            rcItems.layoutManager = manager
+//        }
+
         burn.setOnClickListener {
 //            val manager = SonManager(this, RecyclerView.HORIZONTAL, false)
 //            val sonter = SonAdapter()
@@ -53,11 +66,12 @@ class MainActivity : AppCompatActivity() {
 //            rcItems.adapter = sonter
 //            rcItems.layoutManager = manager
 
-            val sonter = SonAdapter()
-            val manager = RuManager( sonter, this, RecyclerView.HORIZONTAL, false)
+            val rinter = SonAdapter()
+            val manager = RinManager()
+            manager.expandItemListener = rinter
 
             rcItems.setHasFixedSize(true)
-            rcItems.adapter = sonter
+            rcItems.adapter = rinter
             rcItems.layoutManager = manager
         }
     }
