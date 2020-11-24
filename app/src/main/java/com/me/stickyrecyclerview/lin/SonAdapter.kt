@@ -39,4 +39,10 @@ class SonAdapter : RecyclerView.Adapter<SonHolder>(), ExpandRecyclerItem {
     }
 
     override fun isExpandItem(position: Int): Boolean = getItemViewType(position) == TYPE_ADS
+
+    override fun bumpAnimation(position: Int) {
+        if (getItemViewType(position) == TYPE_ADS) {
+            
+        }
+    }
 }

@@ -34,7 +34,7 @@ class RinManager : RecyclerView.LayoutManager() {
             // happen after first init, may trigger by notify data set changed
             val oldLeftView = getChildAt(0)
             if (oldLeftView != null) {
-                oldLeft = oldLeftView.top
+                oldLeft = oldLeftView.left
             }
 
             // try to store the old current height info of expand item
@@ -55,14 +55,14 @@ class RinManager : RecyclerView.LayoutManager() {
                 oldLeft += mFirstPositionOffset
             }
         }
-        Log.v("StickyLayoutManager", "oldLeft 0ld View $oldLeft")
+        Log.v("bowbow", "oldLeft 0ld View $oldLeft")
 
         // put view back to scrap heap => remove all visible view on screen
         detachAndScrapAttachedViews(recycler)
         var leftPos = oldLeft
         var rightPos = 0
         val topPos = paddingTop
-        val bottomPos = height - paddingEnd
+        val bottomPos = height - paddingBottom
         val count = state.itemCount
         // fill up the whole screen with new view again
         run {
@@ -78,14 +78,9 @@ class RinManager : RecyclerView.LayoutManager() {
                 // check for expand item
                 val isExpandItem = expandItemListener?.isExpandItem(position) ?: false
                 if (isExpandItem) {
-                    val percent = expandItemCurrentHeightPercent[position]
-                    if (percent == null) {
-                        rightPos = leftPos + getDecoratedMeasuredWidth(view)
-                        layoutDecorated(view, leftPos, topPos, rightPos, bottomPos)
-                    } else {
-                        rightPos = leftPos + ((getDecoratedMeasuredWidth(view) * percent).toInt())
-                        layoutDecorated(view, leftPos, topPos, rightPos, bottomPos)
-                    }
+                    val percent = expandItemCurrentHeightPercent[position] ?: 1.0
+                    rightPos = leftPos + ((getDecoratedMeasuredWidth(view) * percent).toInt())
+                    layoutDecorated(view, leftPos, topPos, rightPos, bottomPos)
                 } else {
                     rightPos = leftPos + getDecoratedMeasuredWidth(view)
                     layoutDecorated(view, leftPos, topPos, rightPos, bottomPos)
@@ -142,9 +137,9 @@ class RinManager : RecyclerView.LayoutManager() {
         var scrolled = 0
         val topPadding = paddingTop
         val bottomPadding = height - paddingBottom
-        // scrolling up => move content down
+
         if (dx < 0) {
-            Log.v("StickyLayoutManager", "Fill Left")
+            Log.v("bowbow", "Fill Left")
             // fill top
             while (scrolled > dx) {
                 val leftView = getChildAt(0)
@@ -154,7 +149,8 @@ class RinManager : RecyclerView.LayoutManager() {
 
                 // scroll view
                 for (i in 0 until childCount) {
-                    val forceStopEarly = layoutItemLeft(i, state.itemCount, scrollBy, topPadding, bottomPadding)
+                    val forceStopEarly =
+                        layoutItemLeft(i, state.itemCount, scrollBy, topPadding, bottomPadding)
                     if (forceStopEarly) {
                         break
                     }
@@ -165,18 +161,16 @@ class RinManager : RecyclerView.LayoutManager() {
                     val view = recycler.getViewForPosition(mFirstPosition)
                     addView(view, 0)
                     measureChildWithMargins(view, 0, 0)
-                    val right = getDecoratedBottom(leftView)
+                    val right = getDecoratedRight(leftView)
                     val left = right - getDecoratedMeasuredWidth(view)
                     // scroll up => height of expand item already as full size
-                    layoutDecorated(view,  left, topPadding, right, bottomPadding)
+                    layoutDecorated(view, left, topPadding, right, bottomPadding)
                 } else {
                     break
                 }
             }
-        }
-        // scrolling down
-        else if (dx > 0) {
-            Log.v("StickyLayoutManager", "Fill Right")
+        } else if (dx > 0) {
+            Log.v("bowbow", "Fill Right")
             // fill bottom
             val parentWidth = width
             while (scrolled < dx) {
@@ -188,7 +182,8 @@ class RinManager : RecyclerView.LayoutManager() {
 
                 // scroll view (shift content already in screen)
                 for (i in 0 until childCount) {
-                    val forceStopEarly = layoutItemRight(i, state.itemCount, scrollBy, topPadding, bottomPadding)
+                    val forceStopEarly =
+                        layoutItemRight(i, state.itemCount, scrollBy, topPadding, bottomPadding)
                     if (forceStopEarly) {
                         break
                     }
@@ -204,11 +199,11 @@ class RinManager : RecyclerView.LayoutManager() {
                     val isExpandItem = expandItemListener?.isExpandItem(itemPosition) ?: false
                     if (isExpandItem) {
                         Log.e(
-                            "StickyLayoutManager",
+                            "bowbow",
                             "Append new item $itemPosition is expand item $isExpandItem"
                         )
                         // default height is 0
-                        layoutDecorated(view, left, topPadding, bottomPadding, topPadding)
+                        layoutDecorated(view, left, topPadding, left, bottomPadding)
                     } else {
                         val right = left + getDecoratedMeasuredWidth(view)
                         layoutDecorated(view, left, topPadding, right, bottomPadding)
@@ -236,7 +231,9 @@ class RinManager : RecyclerView.LayoutManager() {
         if (isExpandItem) {
             val measureViewWidth = getDecoratedMeasuredWidth(childAtPosition)
             val measureWidthWithoutDecorated =
-                measureViewWidth - getLeftDecorationWidth(childAtPosition)- getRightDecorationWidth(childAtPosition)
+                measureViewWidth - getLeftDecorationWidth(childAtPosition) - getRightDecorationWidth(
+                    childAtPosition
+                )
             val currentWidth =
                 getDecoratedRight(childAtPosition) - getDecoratedLeft(childAtPosition)
 
@@ -278,7 +275,7 @@ class RinManager : RecyclerView.LayoutManager() {
                 } else {
                     val itemScrollBy = -currentWidth
                     Log.e(
-                        "StickyLayoutManager",
+                        "bowbow left",
                         "Over scrolling...... currentHeight $currentWidth newCurrentHeight $newCurrentWidth measureViewHeight $measureViewWidth itemScrollBy $itemScrollBy"
                     )
                     getChildAt(index)?.offsetLeftAndRight(scrollBy)
@@ -330,10 +327,10 @@ class RinManager : RecyclerView.LayoutManager() {
             val currentWidth =
                 getDecoratedRight(childAtPosition) - getDecoratedLeft(childAtPosition)
             Log.v(
-                "StickyLayoutManager",
-                "=======> Is Expand Item Found $adapterPosition Expected Height $measureViewWidth Current Height $currentWidth scroll by value $scrollBy top ${
-                    getDecoratedTop(childAtPosition)
-                } bottom ${getDecoratedBottom(childAtPosition)}"
+                "bowbow right",
+                "=======> Is Expand Item Found $adapterPosition Expected width $measureViewWidth " +
+                        "Current width $currentWidth  left ${getDecoratedLeft(childAtPosition)} " +
+                        "right ${getDecoratedRight(childAtPosition)}"
             )
             val nextView = if (index < childCount - 1) getChildAt(index + 1) else null
             var shouldExpandItem = false
@@ -359,6 +356,7 @@ class RinManager : RecyclerView.LayoutManager() {
                 nextView?.run { correctDockItemPosition(this) }
 
                 val newCurrentWidth = currentWidth + abs(scrollBy)
+                Log.d("bowbow", "newCurrentWidth $newCurrentWidth")
                 // all the scroll by value has been used for expand item height => All the item below should be stay the same at it position
                 if (newCurrentWidth <= measureViewWidth) {
                     layoutDecorated(
@@ -368,12 +366,13 @@ class RinManager : RecyclerView.LayoutManager() {
                         getDecoratedRight(childAtPosition) + abs(scrollBy),
                         bottom
                     )
-                    getChildAt(index)?.offsetTopAndBottom(scrollBy)
+                    getChildAt(index)?.offsetLeftAndRight(scrollBy)
                 } else {
                     val itemScrollBy = measureViewWidth - currentWidth
                     Log.e(
-                        "StickyLayoutManager",
-                        "Over scrolling...... currentHeight $currentWidth newCurrentHeight $newCurrentWidth measureViewHeight $measureViewWidth itemScrollBy $itemScrollBy"
+                        "bowbow",
+                        "currentWidth $currentWidth newCurrentWidth $newCurrentWidth" +
+                                " measureViewWidth $measureViewWidth itemScrollBy $itemScrollBy"
                     )
                     layoutDecorated(
                         childAtPosition,
@@ -383,6 +382,7 @@ class RinManager : RecyclerView.LayoutManager() {
                         bottom
                     )
                     getChildAt(index)?.offsetLeftAndRight(scrollBy)
+
 
                     val delta = scrollBy + itemScrollBy
                     for (j in index + 1 until childCount) {
