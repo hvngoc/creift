@@ -1,6 +1,8 @@
 package com.me.stickyrecyclerview.lin
 
+import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.me.stickyrecyclerview.ExpandRecyclerItem
@@ -40,9 +42,10 @@ class SonAdapter : RecyclerView.Adapter<SonHolder>(), ExpandRecyclerItem {
 
     override fun isExpandItem(position: Int): Boolean = getItemViewType(position) == TYPE_ADS
 
-    override fun bumpAnimation(position: Int) {
-        if (getItemViewType(position) == TYPE_ADS) {
-            
-        }
+    override fun bumpAnimation(view : View, position: Int) {
+        Log.w("bowbow", "bowbow bowbow")
+            view.animate().setDuration(500L)
+                .scaleX(1.2f).scaleY(1.2f)
+                .start()
     }
 }

@@ -47,7 +47,7 @@ class MainAdapter: RecyclerView.Adapter<MainAdapter.ViewHolder>(), ExpandRecycle
         return position % 5 == 0 && position != 0
     }
 
-    override fun bumpAnimation(position: Int) {
+    override fun bumpAnimation(view : View, position: Int) {
 
     }
 }

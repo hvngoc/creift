@@ -139,12 +139,13 @@ class RinManager : RecyclerView.LayoutManager() {
         val bottomPadding = height - paddingBottom
 
         if (dx < 0) {
-            Log.v("bowbow", "Fill Left")
+            Log.v("bowbow", "Fill Left scrolled $scrolled dx $dx")
             // fill top
             while (scrolled > dx) {
                 val leftView = getChildAt(0)
                 val hangingLeft = (-getDecoratedLeft(leftView!!)).coerceAtLeast(0)
                 val scrollBy = (scrolled - dx).coerceAtMost(hangingLeft)
+                Log.i("bowbow", "Fill Left scrolled $scrolled  scrollBy $scrollBy dx $dx")
                 scrolled -= scrollBy
 
                 // scroll view
@@ -382,7 +383,7 @@ class RinManager : RecyclerView.LayoutManager() {
                         bottom
                     )
                     getChildAt(index)?.offsetLeftAndRight(scrollBy)
-
+                    expandItemListener?.bumpAnimation(childAtPosition, index)
 
                     val delta = scrollBy + itemScrollBy
                     for (j in index + 1 until childCount) {
