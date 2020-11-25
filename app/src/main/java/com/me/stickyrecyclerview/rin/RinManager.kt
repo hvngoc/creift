@@ -126,11 +126,7 @@ class RinManager : RecyclerView.LayoutManager() {
     }
 
 
-    override fun scrollHorizontallyBy(
-        dx: Int,
-        recycler: RecyclerView.Recycler,
-        state: RecyclerView.State
-    ): Int {
+    override fun scrollHorizontallyBy(dx: Int, recycler: RecyclerView.Recycler, state: RecyclerView.State): Int {
         if (childCount == 0) {
             return 0
         }
@@ -187,6 +183,11 @@ class RinManager : RecyclerView.LayoutManager() {
                         layoutItemRight(i, state.itemCount, scrollBy, topPadding, bottomPadding)
                     if (forceStopEarly) {
                         break
+                    } else {
+                        val stopScroll = checkAnimation(i, dx, topPadding, bottomPadding)
+                        if (stopScroll) {
+                            return 0
+                        }
                     }
                 }
 
@@ -219,13 +220,7 @@ class RinManager : RecyclerView.LayoutManager() {
         return scrolled
     }
 
-    private fun layoutItemLeft(
-        index: Int,
-        totalItemCount: Int,
-        scrollBy: Int,
-        top: Int,
-        bottom: Int
-    ): Boolean {
+    private fun layoutItemLeft(index: Int, totalItemCount: Int, scrollBy: Int, top: Int, bottom: Int): Boolean {
         val childAtPosition = getChildAt(index) ?: return false
         val adapterPosition = getPosition(childAtPosition)
         val isExpandItem = expandItemListener?.isExpandItem(adapterPosition) ?: false
@@ -309,13 +304,7 @@ class RinManager : RecyclerView.LayoutManager() {
         return false
     }
 
-    private fun layoutItemRight(
-        index: Int,
-        totalItemCount: Int,
-        scrollBy: Int,
-        top: Int,
-        bottom: Int
-    ): Boolean {
+    private fun layoutItemRight(index: Int, totalItemCount: Int, scrollBy: Int, top: Int, bottom: Int): Boolean {
         val childAtPosition = getChildAt(index) ?: return false
         val adapterPosition = getPosition(childAtPosition)
         val isExpandItem = expandItemListener?.isExpandItem(adapterPosition) ?: false
@@ -353,6 +342,10 @@ class RinManager : RecyclerView.LayoutManager() {
                 } else {
                     View.VISIBLE
                 }
+            Log.i(
+                "bowbow",
+                "currentWidth $currentWidth  measureViewWidth $measureViewWidth  shouldExpandItem $shouldExpandItem"
+            )
             if (currentWidth < measureViewWidth && shouldExpandItem) {
                 nextView?.run { correctDockItemPosition(this) }
 
@@ -383,7 +376,9 @@ class RinManager : RecyclerView.LayoutManager() {
                         bottom
                     )
                     getChildAt(index)?.offsetLeftAndRight(scrollBy)
-                    expandItemListener?.bumpAnimation(childAtPosition, index)
+
+//                    only use for animation without re bouncing view
+//                    expandItemListener?.bumpAnimation(childAtPosition, index)
 
                     val delta = scrollBy + itemScrollBy
                     for (j in index + 1 until childCount) {
@@ -395,6 +390,17 @@ class RinManager : RecyclerView.LayoutManager() {
                 }
                 return true
             } else {
+//                Log.w("bowbow", "fail aaa")
+//                if (currentWidth >= measureViewWidth) {
+//                    Log.e("bowbow", "fangggggg")
+//                    layoutDecorated(
+//                        childAtPosition,
+//                        getDecoratedLeft(childAtPosition) - abs(scrollBy),
+//                        top,
+//                        getDecoratedRight(childAtPosition) + abs(scrollBy),
+//                        bottom
+//                    )
+//                }
                 getChildAt(index)?.offsetLeftAndRight(scrollBy)
             }
         } else {
@@ -402,6 +408,64 @@ class RinManager : RecyclerView.LayoutManager() {
             getChildAt(index)?.offsetLeftAndRight(scrollBy)
         }
 
+        return false
+    }
+
+    private fun checkAnimation(index: Int, scrollBy: Int, top: Int, bottom: Int): Boolean {
+        val childAtPosition = getChildAt(index) ?: return false
+        val adapterPosition = getPosition(childAtPosition)
+        val isExpandItem = expandItemListener?.isExpandItem(adapterPosition) ?: false
+        if (!isExpandItem) {
+            return false
+        }
+        val measureViewWidth = getDecoratedMeasuredWidth(childAtPosition)
+        val currentWidth = getDecoratedRight(childAtPosition) - getDecoratedLeft(childAtPosition)
+        Log.v(
+            "bowbow animate",
+            "=======> Is Expand Item Found $adapterPosition Expected width $measureViewWidth " +
+                    "Current width $currentWidth  left ${getDecoratedLeft(childAtPosition)} " +
+                    "right ${getDecoratedRight(childAtPosition)}"
+        )
+        val nextView = if (index < childCount - 1) getChildAt(index + 1) else null
+        val preView = if (index > 0) getChildAt(index - 1) else null
+
+        if (currentWidth in measureViewWidth until width) {
+            val scrollOffset = abs(scrollBy)
+
+            Log.i("bowbow animate", "gogogo $scrollOffset width $width")
+
+            layoutDecorated(
+                childAtPosition,
+                getDecoratedLeft(childAtPosition) - scrollOffset,
+                top,
+                getDecoratedRight(childAtPosition) + scrollOffset,
+                bottom
+            )
+            childAtPosition.offsetLeftAndRight(scrollBy)
+
+            nextView?.let {
+                layoutDecorated(
+                    it,
+                    getDecoratedLeft(it) + scrollOffset / 2,
+                    top,
+                    getDecoratedRight(it) + scrollOffset / 2,
+                    bottom
+                )
+                it.offsetLeftAndRight(scrollBy / 2)
+            }
+
+            preView?.let {
+                layoutDecorated(
+                    it,
+                    getDecoratedLeft(it) - scrollOffset,
+                    top,
+                    getDecoratedRight(it) - scrollOffset,
+                    bottom
+                )
+                it.offsetLeftAndRight(scrollBy)
+            }
+            return true
+        }
         return false
     }
 
@@ -423,9 +487,8 @@ class RinManager : RecyclerView.LayoutManager() {
         var last = 0
         for (i in 0 until childCount) {
             val view = getChildAt(i) ?: continue
-            if (view.hasFocus() || getDecoratedRight(view) >= 0 && getDecoratedLeft(view) <= parentWidth && getDecoratedBottom(
-                    view
-                ) >= 0 && getDecoratedTop(view) <= parentHeight
+            if (view.hasFocus() || getDecoratedRight(view) >= 0 && getDecoratedLeft(view) <= parentWidth
+                && getDecoratedBottom(view) >= 0 && getDecoratedTop(view) <= parentHeight
             ) {
                 if (!foundFirst) {
                     first = i
