@@ -22,7 +22,7 @@ class RinManager : RecyclerView.LayoutManager() {
     var expandItemListener: ExpandRecyclerItem? = null
 
     private val recycleViews: MutableList<RecyclerView.ViewHolder> = CopyOnWriteArrayList()
-    private val expandItemCurrentHeightPercent = ConcurrentHashMap<Int, Double>()
+    private val mCacheChildPercent = ConcurrentHashMap<Int, Double>()
 
     private val boundaryExpandItem get() = (width * 0.1f).toInt()
 
@@ -46,7 +46,7 @@ class RinManager : RecyclerView.LayoutManager() {
                     val measureViewWidth = getDecoratedMeasuredWidth(itemView)
                     val currentWidth = getDecoratedRight(itemView) - getDecoratedLeft(itemView)
                     val percent = currentWidth.toDouble() / measureViewWidth
-                    expandItemCurrentHeightPercent[adapterPosition] = percent
+                    mCacheChildPercent[adapterPosition] = percent
                 }
             }
         } else {
@@ -78,7 +78,7 @@ class RinManager : RecyclerView.LayoutManager() {
                 // check for expand item
                 val isExpandItem = expandItemListener?.isExpandItem(position) ?: false
                 if (isExpandItem) {
-                    val percent = expandItemCurrentHeightPercent[position] ?: 1.0
+                    val percent = mCacheChildPercent[position] ?: 1.0
                     rightPos = leftPos + ((getDecoratedMeasuredWidth(view) * percent).toInt())
                     layoutDecorated(view, leftPos, topPos, rightPos, bottomPos)
                 } else {
@@ -99,7 +99,7 @@ class RinManager : RecyclerView.LayoutManager() {
             recycler.recycleView(viewHolder.itemView)
         }
 
-        expandItemCurrentHeightPercent.clear()
+        mCacheChildPercent.clear()
     }
 
     override fun generateDefaultLayoutParams(): RecyclerView.LayoutParams {
@@ -135,19 +135,18 @@ class RinManager : RecyclerView.LayoutManager() {
         val bottomPadding = height - paddingBottom
 
         if (dx < 0) {
-            Log.v("bowbow", "Fill Left scrolled $scrolled dx $dx")
             // fill top
             while (scrolled > dx) {
+                Log.v("bowbow", "scrolled $scrolled dx $dx")
                 val leftView = getChildAt(0)
                 val hangingLeft = (-getDecoratedLeft(leftView!!)).coerceAtLeast(0)
                 val scrollBy = (scrolled - dx).coerceAtMost(hangingLeft)
-                Log.i("bowbow", "Fill Left scrolled $scrolled  scrollBy $scrollBy dx $dx")
+                Log.i("bowbow", "Fill Left scrolled $scrolled dx $dx scrollBy $scrollBy")
                 scrolled -= scrollBy
 
                 // scroll view
                 for (i in 0 until childCount) {
-                    val forceStopEarly =
-                        layoutItemLeft(i, state.itemCount, scrollBy, topPadding, bottomPadding)
+                    val forceStopEarly = layoutItemLeft(i, state.itemCount, scrollBy, topPadding, bottomPadding)
                     if (forceStopEarly) {
                         break
                     }
@@ -158,8 +157,9 @@ class RinManager : RecyclerView.LayoutManager() {
                     val view = recycler.getViewForPosition(mFirstPosition)
                     addView(view, 0)
                     measureChildWithMargins(view, 0, 0)
-                    val right = getDecoratedRight(leftView)
+                    val right = getDecoratedLeft(leftView)
                     val left = right - getDecoratedMeasuredWidth(view)
+                    Log.w("bowbow", "add right $right  left $left")
                     // scroll up => height of expand item already as full size
                     layoutDecorated(view, left, topPadding, right, bottomPadding)
                 } else {
@@ -172,22 +172,20 @@ class RinManager : RecyclerView.LayoutManager() {
             val parentWidth = width
             while (scrolled < dx) {
                 val rightView = getChildAt(childCount - 1)
-                val hangingRight =
-                    (getDecoratedRight(rightView!!) - parentWidth).coerceAtLeast(0)
+                val hangingRight = (getDecoratedRight(rightView!!) - parentWidth).coerceAtLeast(0)
                 val scrollBy = -(dx - scrolled).coerceAtMost(hangingRight)
                 scrolled -= scrollBy
 
                 // scroll view (shift content already in screen)
                 for (i in 0 until childCount) {
-                    val forceStopEarly =
-                        layoutItemRight(i, state.itemCount, scrollBy, topPadding, bottomPadding)
+                    val forceStopEarly = layoutItemRight(i, state.itemCount, scrollBy, topPadding, bottomPadding)
                     if (forceStopEarly) {
                         break
-                    } else {
-                        val stopScroll = checkAnimation(i, dx, topPadding, bottomPadding)
-                        if (stopScroll) {
-                            return 0
-                        }
+                    }
+
+                    val stopScroll = checkAnimation(i, dx, topPadding, bottomPadding)
+                    if (stopScroll) {
+                        return 0
                     }
                 }
 
@@ -227,11 +225,8 @@ class RinManager : RecyclerView.LayoutManager() {
         if (isExpandItem) {
             val measureViewWidth = getDecoratedMeasuredWidth(childAtPosition)
             val measureWidthWithoutDecorated =
-                measureViewWidth - getLeftDecorationWidth(childAtPosition) - getRightDecorationWidth(
-                    childAtPosition
-                )
-            val currentWidth =
-                getDecoratedRight(childAtPosition) - getDecoratedLeft(childAtPosition)
+                measureViewWidth - getLeftDecorationWidth(childAtPosition) - getRightDecorationWidth(childAtPosition)
+            val currentWidth = getDecoratedRight(childAtPosition) - getDecoratedLeft(childAtPosition)
 
 
             val nextView = if (index < childCount - 1) getChildAt(index + 1) else null
@@ -248,8 +243,7 @@ class RinManager : RecyclerView.LayoutManager() {
                     shouldCollapseItem = true
                 }
             }
-            childAtPosition.visibility =
-                if (currentWidth <= (measureViewWidth - measureWidthWithoutDecorated)) {
+            childAtPosition.visibility = if (currentWidth <= (measureViewWidth - measureWidthWithoutDecorated)) {
                     View.INVISIBLE
                 } else {
                     View.VISIBLE
@@ -311,11 +305,8 @@ class RinManager : RecyclerView.LayoutManager() {
         if (isExpandItem) {
             val measureViewWidth = getDecoratedMeasuredWidth(childAtPosition)
             val measureWidthWithoutDecorated =
-                measureViewWidth - getLeftDecorationWidth(childAtPosition) - getRightDecorationWidth(
-                    childAtPosition
-                )
-            val currentWidth =
-                getDecoratedRight(childAtPosition) - getDecoratedLeft(childAtPosition)
+                measureViewWidth - getLeftDecorationWidth(childAtPosition) - getRightDecorationWidth(childAtPosition)
+            val currentWidth = getDecoratedRight(childAtPosition) - getDecoratedLeft(childAtPosition)
             Log.v(
                 "bowbow right",
                 "=======> Is Expand Item Found $adapterPosition Expected width $measureViewWidth " +
@@ -336,8 +327,7 @@ class RinManager : RecyclerView.LayoutManager() {
                     shouldExpandItem = true
                 }
             }
-            childAtPosition.visibility =
-                if (currentWidth <= (measureViewWidth - measureWidthWithoutDecorated)) {
+            childAtPosition.visibility = if (currentWidth <= (measureViewWidth - measureWidthWithoutDecorated)) {
                     View.INVISIBLE
                 } else {
                     View.VISIBLE
@@ -451,7 +441,7 @@ class RinManager : RecyclerView.LayoutManager() {
                     getDecoratedRight(it) + scrollOffset / 2,
                     bottom
                 )
-                it.offsetLeftAndRight(scrollBy / 2)
+                it.offsetLeftAndRight(scrollBy)
             }
 
             preView?.let {
@@ -521,7 +511,7 @@ class RinManager : RecyclerView.LayoutManager() {
 
     override fun onSaveInstanceState(): Parcelable? {
         // set expand item percent size.....
-        expandItemCurrentHeightPercent.clear()
+        mCacheChildPercent.clear()
         for (i in 0 until childCount) {
             val itemView = getChildAt(i) ?: continue
             val adapterPosition = getPosition(itemView)
@@ -530,10 +520,10 @@ class RinManager : RecyclerView.LayoutManager() {
                 val measureViewWidth = getDecoratedMeasuredWidth(itemView)
                 val currentWidth = getDecoratedRight(itemView) - getDecoratedLeft(itemView)
                 val percent = currentWidth.toDouble() / measureViewWidth
-                expandItemCurrentHeightPercent[adapterPosition] = percent
+                mCacheChildPercent[adapterPosition] = percent
             }
         }
-        return SavedState(mFirstPosition, mFirstPositionOffset, expandItemCurrentHeightPercent)
+        return SavedState(mFirstPosition, mFirstPositionOffset, mCacheChildPercent)
     }
 
     override fun onRestoreInstanceState(state: Parcelable) {
@@ -541,8 +531,8 @@ class RinManager : RecyclerView.LayoutManager() {
         if (state is SavedState) {
             mFirstPosition = state.mAnchorPosition
             mFirstPositionOffset = state.mAnchorOffset
-            expandItemCurrentHeightPercent.clear()
-            expandItemCurrentHeightPercent.putAll(state.expandItemCurrentHeightPercent)
+            mCacheChildPercent.clear()
+            mCacheChildPercent.putAll(state.expandItemCurrentHeightPercent)
         }
     }
 

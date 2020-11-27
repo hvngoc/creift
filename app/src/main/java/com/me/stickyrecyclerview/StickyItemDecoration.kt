@@ -12,7 +12,7 @@ class StickyItemDecoration(private val space: Int): RecyclerView.ItemDecoration(
         parent: RecyclerView,
         state: RecyclerView.State
     ) {
-//        outRect.left = space
+        outRect.left = space
         outRect.right = space
 //        outRect.bottom = space
 
